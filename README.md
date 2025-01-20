@@ -12,6 +12,8 @@ Editar tarefa,
 
 Concluir tarefa.
 
+Link Deploy: https://tarefinhas-list.netlify.app
+
 (Dependências: Router-dom e Firebase) 
 
 ## Available Scripts
