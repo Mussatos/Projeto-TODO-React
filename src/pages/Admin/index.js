@@ -1,15 +1,16 @@
 import './admin.css';
 import { useState, useEffect } from 'react';
-import { addDoc, collection, onSnapshot, query, orderBy, where, deleteDoc, doc, updateDoc } from 'firebase/firestore'
+import { addDoc, collection, onSnapshot, query, orderBy, where, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { db, auth } from '../../firebaseConnection';
 import { signOut } from 'firebase/auth';
+import Collapsible, {} from '../../components/Collapsible';
 
 export default function Admin() {
 
     const [tarefaInput, setTarefaInput] = useState('');
     const [user, setUser] = useState({});
     const [edit, setEdit] = useState({});
-
+    
     const [tarefas, setTarefas] = useState([]);
 
     useEffect(() => {
@@ -31,9 +32,11 @@ export default function Admin() {
                             id: doc.id,
                             tarefa: doc.data().tarefa,
                             userUid: doc.data().userUid,
+                            created: doc.data().created.toDate(),
                         })
                     })
                     setTarefas(lista);
+                    console.log(lista)
                 })
             }
         }
@@ -48,7 +51,7 @@ export default function Admin() {
             return;
         }
 
-        if(edit?.id){
+        if (edit?.id) {
             updateTarefa();
             return;
         }
@@ -75,6 +78,19 @@ export default function Admin() {
         await deleteDoc(docRef)
         setTarefaInput('')
         setEdit({})
+
+        await addDoc(collection(db, 'tarefasConcluidas'), {
+            dataFinalizada: new Date(),
+            userUid: user?.uid,
+            tarefaConcluida: tarefas, 
+        })
+        .then(()=>{
+            
+        })
+        .catch((err)=>{
+            alert(err);
+        })
+
     }
 
     async function editTarefa(item) {
@@ -87,15 +103,15 @@ export default function Admin() {
         await updateDoc(docRef, {
             tarefa: tarefaInput,
         })
-        .then(()=>{
-            setTarefaInput('')
-            setEdit({})
-        })
-        .catch((err)=>{
-            alert(err)
-            setTarefaInput('')
-            setEdit({})
-        })
+            .then(() => {
+                setTarefaInput('')
+                setEdit({})
+            })
+            .catch((err) => {
+                alert(err)
+                setTarefaInput('')
+                setEdit({})
+            })
     }
 
     return (
@@ -110,11 +126,11 @@ export default function Admin() {
 
                 {
                     //Usamos isso para saber se o objeto está vazio ou se tem uma propriedade la dentro
-                    Object.keys(edit).length > 0 ?(
-                    <button className='btn-register' type='submit'>Atualizar tarefa</button>
-                ) : (
-                    <button className='btn-register' type='submit'>Registrar tarefa</button>
-                )
+                    Object.keys(edit).length > 0 ? (
+                        <button className='btn-register' type='submit'>Atualizar tarefa</button>
+                    ) : (
+                        <button className='btn-register' type='submit'>Registrar tarefa</button>
+                    )
                 }
 
             </form>
@@ -127,18 +143,39 @@ export default function Admin() {
                                 {item.tarefa}
                             </p>
 
-                            <div>
-                                <button onClick={ ()=> editTarefa(item)}>Editar</button>
-                                <button className='btn-delete' onClick={ () => deletarTarefa(item.id) }>Concluir</button>
+                            <br />
+
+                            <div className='organizando-botoes'>
+                                <div>
+                                    <button onClick={() => editTarefa(item)}>Editar</button>
+                                    <button className='btn-delete' onClick={() => deletarTarefa(item.id)}>Concluir</button>
+                                </div>
+                                <div>
+                                    <span>
+                                        {item.created.toLocaleDateString()}
+                                    </span>
+                                    <span>
+                                        {item.created.toLocaleTimeString('pt-BR', {
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        })}
+                                    </span>
+                                </div>
                             </div>
 
                         </article>
                     );
                 })
             }
+            <br />
+            <br />
+            <div>
+
+            <Collapsible/>
+                
+            </div>
 
             <button className='btn-logout' onClick={logoutUser}>Sair</button>
-
 
         </div>
     );

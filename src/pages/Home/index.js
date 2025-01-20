@@ -28,10 +28,7 @@ export default function Home(){
             alert('Preencha todos os campos!')
         }
 
-
-        
     }
-
 
     return(
         <div className='home-container'>

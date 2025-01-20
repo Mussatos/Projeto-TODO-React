@@ -24,9 +24,7 @@ export default function Register(){
         }else{
             alert('Preencha todos os campos!')
         }
-
-
-        
+ 
     }
 
     return(

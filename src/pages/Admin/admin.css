@@ -28,6 +28,7 @@
 
 .list p{
     margin-bottom: 8px;
+    word-wrap: break-word;
 }
 
 .list button{
@@ -59,4 +60,14 @@
 .btn-logout:hover{
     background-color: rgba(219, 38, 41, 1);
     color: #FFF;
+}
+
+.organizando-botoes{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+span{
+    padding: 0 10px;
 }
