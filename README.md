@@ -10,7 +10,9 @@ Salvar tarefa,
 
 Editar tarefa,
 
-Concluir tarefa.
+Concluir tarefa,
+
+Histórico das tarefas concluídas.
 
 Link Deploy: https://tarefinhas-list.netlify.app
 
