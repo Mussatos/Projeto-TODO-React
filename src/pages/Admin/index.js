@@ -8,6 +8,7 @@ export default function Admin() {
 
     const [tarefaInput, setTarefaInput] = useState('');
     const [user, setUser] = useState({});
+    const [edit, setEdit] = useState({});
 
     const [tarefas, setTarefas] = useState([]);
 
@@ -47,6 +48,11 @@ export default function Admin() {
             return;
         }
 
+        if(edit?.id){
+            updateTarefa();
+            return;
+        }
+
         await addDoc(collection(db, "tarefas"), {
             tarefa: tarefaInput,
             created: new Date(),
@@ -67,13 +73,30 @@ export default function Admin() {
     async function deletarTarefa(id) {
         const docRef = doc(db, "tarefas", id)
         await deleteDoc(docRef)
+        setTarefaInput('')
+        setEdit({})
     }
 
-    // async function editarTarefa(){
-    //     await updateDoc(collection(db, "tarefas"),{
-    //         tarefa: tarefas,
-    //     })
-    // }
+    async function editTarefa(item) {
+        setTarefaInput(item.tarefa)
+        setEdit(item);
+    }
+
+    async function updateTarefa() {
+        const docRef = doc(db, 'tarefas', edit?.id)
+        await updateDoc(docRef, {
+            tarefa: tarefaInput,
+        })
+        .then(()=>{
+            setTarefaInput('')
+            setEdit({})
+        })
+        .catch((err)=>{
+            alert(err)
+            setTarefaInput('')
+            setEdit({})
+        })
+    }
 
     return (
         <div className='admin-container'>
@@ -85,7 +108,14 @@ export default function Admin() {
                     value={tarefaInput}
                     onChange={(e) => setTarefaInput(e.target.value)} />
 
-                <button className='btn-register' type='submit'>Registrar tarefa</button>
+                {
+                    //Usamos isso para saber se o objeto está vazio ou se tem uma propriedade la dentro
+                    Object.keys(edit).length > 0 ?(
+                    <button className='btn-register' type='submit'>Atualizar tarefa</button>
+                ) : (
+                    <button className='btn-register' type='submit'>Registrar tarefa</button>
+                )
+                }
 
             </form>
 
@@ -98,7 +128,7 @@ export default function Admin() {
                             </p>
 
                             <div>
-                                <button {/*onClick={editarTarefa}*/}>Editar</button>
+                                <button onClick={ ()=> editTarefa(item)}>Editar</button>
                                 <button className='btn-delete' onClick={ () => deletarTarefa(item.id) }>Concluir</button>
                             </div>
 
