@@ -1,6 +1,20 @@
-# Getting Started with Create React App
+# Projeto TODO List com ReactJS + Firebase
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Funções:
+
+Registro de usuário,
+
+Login,
+
+Salvar tarefa,
+
+Editar tarefa,
+
+Concluir tarefa.
+
+Link Deploy: https://tarefinhas-list.netlify.app
+
+(Dependências: Router-dom e Firebase) 
 
 ## Available Scripts
 
