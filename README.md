@@ -12,7 +12,7 @@ Editar tarefa,
 
 Concluir tarefa.
 
-(dependências: router-dom, firebase) 
+(Dependências: Router-dom e Firebase) 
 
 ## Available Scripts
 
