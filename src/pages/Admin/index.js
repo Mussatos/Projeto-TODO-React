@@ -3,14 +3,17 @@ import { useState, useEffect } from 'react';
 import { addDoc, collection, onSnapshot, query, orderBy, where, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { db, auth } from '../../firebaseConnection';
 import { signOut } from 'firebase/auth';
-import Collapsible, {} from '../../components/Collapsible';
 
 export default function Admin() {
 
     const [tarefaInput, setTarefaInput] = useState('');
+    const [tarefasConcluidas, setTarefaConcluida] = useState([]);
+
     const [user, setUser] = useState({});
     const [edit, setEdit] = useState({});
-    
+
+    const [open, setOpen] = useState(false);
+
     const [tarefas, setTarefas] = useState([]);
 
     useEffect(() => {
@@ -36,7 +39,6 @@ export default function Admin() {
                         })
                     })
                     setTarefas(lista);
-                    console.log(lista)
                 })
             }
         }
@@ -73,24 +75,18 @@ export default function Admin() {
         await signOut(auth);
     }
 
-    async function deletarTarefa(id) {
-        const docRef = doc(db, "tarefas", id)
-        await deleteDoc(docRef)
-        setTarefaInput('')
-        setEdit({})
-
-        await addDoc(collection(db, 'tarefasConcluidas'), {
-            dataFinalizada: new Date(),
-            userUid: user?.uid,
-            tarefaConcluida: tarefas, 
-        })
-        .then(()=>{
-            
-        })
-        .catch((err)=>{
-            alert(err);
-        })
-
+    async function deletarTarefa(id, tarefa, created, uid) {
+        try {
+            await addDoc(collection(db, 'tarefasConcluidas'), {
+                dataFinalizada: new Date(),
+                userUid: uid,
+                tarefaConcluida: tarefa,
+                created: created,
+            });
+            const docRef = doc(db, "tarefas", id);
+            await deleteDoc(docRef);
+        } catch (error) {
+        }
     }
 
     async function editTarefa(item) {
@@ -112,6 +108,46 @@ export default function Admin() {
                 setTarefaInput('')
                 setEdit({})
             })
+    }
+
+    function openButton(e) {
+        if (open === false) {
+            setOpen(true)
+            async function loadTarefas() {
+                const userDetail = localStorage.getItem('@detailUser');
+                setUser(JSON.parse(userDetail));
+
+                if (userDetail) {
+                    const data = JSON.parse(userDetail);
+                    e.preventDefault();
+
+                    const tarefaRef = collection(db, 'tarefasConcluidas')
+                    const q = query(tarefaRef, orderBy("dataFinalizada", 'desc'), where("userUid", "==", data?.uid))
+
+                    const onsub = onSnapshot(q, (snapshot) => {
+                        let lista = [];
+
+                        snapshot.forEach((doc) => {
+                            lista.push({
+                                id: doc.id,
+                                tarefaConcluida: doc.data().tarefaConcluida,
+                                userUid: doc.data().userUid,
+                                dataFinalizada: doc.data().dataFinalizada.toDate(),
+                                created: doc.data().created.toDate(),
+                            })
+                        })
+                        setTarefaConcluida(lista);
+                    })
+                }
+            }
+
+            return loadTarefas();
+        }
+        else {
+            setOpen(false)
+            e.preventDefault();
+            return;
+        }
     }
 
     return (
@@ -148,12 +184,14 @@ export default function Admin() {
                             <div className='organizando-botoes'>
                                 <div>
                                     <button onClick={() => editTarefa(item)}>Editar</button>
-                                    <button className='btn-delete' onClick={() => deletarTarefa(item.id)}>Concluir</button>
+                                    <button className='btn-delete' onClick={() => deletarTarefa(item.id, item.tarefa, item.created, item.userUid)}>Concluir</button>
                                 </div>
                                 <div>
+                                    Criação: {` `}
                                     <span>
                                         {item.created.toLocaleDateString()}
                                     </span>
+                                    {` `}
                                     <span>
                                         {item.created.toLocaleTimeString('pt-BR', {
                                             hour: '2-digit',
@@ -167,13 +205,44 @@ export default function Admin() {
                     );
                 })
             }
-            <br />
-            <br />
-            <div>
+            <form className='form' onSubmit={openButton}>
+                <button className='btn-register' type='submit'>
+                    Histórico
+                </button>
+            </form>
+            {
+                open && tarefasConcluidas.map((item) => {
+                    return (
+                        <div className='list'>
+                            <article key={item.id}>
+                                {
+                                    <div>
+                                        <p>
+                                            {item.tarefaConcluida}
+                                        </p>
+                                        <br/>
+                                        <div className='data-conclusao'>
+                                        <span>
+                                            Criação: {` `}
+                                            {item.created.toLocaleDateString()}
+                                            {` `}
+                                            {item.created.toLocaleTimeString()}
+                                        </span>
+                                        <span>
+                                            Finalização: {` `}
+                                            {item.dataFinalizada.toLocaleDateString()}
+                                            {` `}
+                                            {item.dataFinalizada.toLocaleTimeString()}
+                                        </span>
 
-            <Collapsible/>
-                
-            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </article>
+                        </div>
+                    );
+                })
+            }
 
             <button className='btn-logout' onClick={logoutUser}>Sair</button>
 

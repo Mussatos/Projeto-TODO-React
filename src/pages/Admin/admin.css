@@ -64,10 +64,12 @@
 
 .organizando-botoes{
     display: flex;
-    flex-direction: row;
     justify-content: space-between;
 }
 
-span{
-    padding: 0 10px;
+
+.data-conclusao{
+    display: flex;
+    justify-content: space-between;
+    
 }
